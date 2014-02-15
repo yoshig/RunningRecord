@@ -1,9 +1,11 @@
 require_relative 'db_connection'
 # require_relative '01_mass_object' <= deprecated
 require_relative '00_attr_accessor_object.rb'
+require_relative '03_searchable.rb'
 require 'active_support/inflector'
 
 class MassObject < AttrAccessorObject
+
   my_attr_accessor(:table_name, :attributes)
 
   def self.parse_all(results)
@@ -61,7 +63,7 @@ class SQLObject < MassObject
   end
 
   def attributes(params)
-    @attributes ||= params
+    @attributes = params
   end
 
   def insert
@@ -77,7 +79,7 @@ class SQLObject < MassObject
 
   end
 
-  def initialize(params)
+  def initialize(params = {})
     attributes(params)
     params.each do |name, val|
       unless self.class.columns.include?(name.to_sym)
@@ -88,28 +90,35 @@ class SQLObject < MassObject
   end
 
   def save
-    # ...
+    id.nil? ? insert : update
   end
 
   def update
-    p set_line
-    updater = <<-SQL
+    params = attribute_values[1..-1]
+    p params
+    DBConnection.execute2(<<-SQL, *params)
 
       UPDATE
         #{self.class.table_name}
       SET
-
+        #{set_line}
+      WHERE
+        id = #{attribute_values[0]}
     SQL
+    
   end
 
   def attribute_values
-    @attributes.values
+    vals =  @attributes.keys.map do |x|
+      send(x)
+    end
+    vals
   end
 
   def set_line
-    self.class.columns[1..-2].map.with_index do |col, i|
-      
-    end
+    self.class.columns[1..-1].map do |col|
+      "#{col} = ?"
+    end.join(', ')
   end
 end
 

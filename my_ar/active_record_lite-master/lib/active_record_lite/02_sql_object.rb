@@ -1,7 +1,6 @@
 require_relative 'db_connection'
 # require_relative '01_mass_object' <= deprecated
 require_relative '00_attr_accessor_object.rb'
-require_relative '03_searchable.rb'
 require 'active_support/inflector'
 
 class MassObject < AttrAccessorObject
@@ -44,9 +43,9 @@ class SQLObject < MassObject
         #{self.table_name}
     SQL
 
-    all_cats = DBConnection.execute2(query)
-    all_cats[1..-1].map do |cat|
-      Cat.new(cat)
+    all_instances = DBConnection.execute2(query)
+    all_instances[1..-1].map do |instance|
+      self.new(instance)
     end
   end
 

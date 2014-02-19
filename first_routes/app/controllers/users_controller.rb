@@ -34,16 +34,32 @@ class UsersController < ApplicationController
   end
 
   def update
-    @user = User.find(params[:id])
-    if @user.update!(user_params)
-      render :json => @user
-    else
-      render :json => @user.errors.full_messages, :status => 422
-    end
+    # if params.include?(:favorite)
+  #     if params[:favorite].include?(:add_fav)
+  #       fav = Favorite.new(fav_params)
+  #       if fav.save
+  #         render :json => fav
+  #       else
+  #         render :json => contact.errors.full_messages, :status => 422
+  #       else
+  #         fav.delete
+  #     end
+  #   else
+      @user = User.find(params[:id])
+      if @user.update!(user_params)
+        render :json => @user
+      else
+        render :json => @user.errors.full_messages, :status => 422
+      end
+    # end
   end
 
   private
   def user_params
     params.require(:user).permit(:username)
+  end
+
+  def fav_params
+    params.require(:favorite).permit(:contact_id)
   end
 end
